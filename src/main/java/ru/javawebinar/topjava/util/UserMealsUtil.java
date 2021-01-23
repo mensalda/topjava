@@ -3,11 +3,9 @@ package ru.javawebinar.topjava.util;
 import ru.javawebinar.topjava.model.UserMeal;
 import ru.javawebinar.topjava.model.UserMealWithExcess;
 
-import java.time.LocalDateTime;
-import java.time.LocalTime;
-import java.time.Month;
-import java.util.Arrays;
-import java.util.List;
+import java.time.*;
+import java.time.format.DateTimeFormatter;
+import java.util.*;
 
 public class UserMealsUtil {
     public static void main(String[] args) {
@@ -29,8 +27,30 @@ public class UserMealsUtil {
 
     public static List<UserMealWithExcess> filteredByCycles(List<UserMeal> meals, LocalTime startTime, LocalTime endTime, int caloriesPerDay) {
         // TODO return filtered list with excess. Implement by cycles
-        return null;
+        List<UserMealWithExcess> filteredResults = new ArrayList<>();
+        Map<String, Integer> map = mapCaloriesPerDay(meals);
+        for (UserMeal meal : meals) {
+            LocalDateTime date = meal.getDateTime();
+            if (date.toLocalTime().isAfter(startTime) && date.toLocalTime().isBefore(endTime)) {
+                String dateStr = date.toLocalDate().format(DateTimeFormatter.BASIC_ISO_DATE);
+                int dateCal = map.getOrDefault(dateStr, 0);
+                filteredResults.add(new UserMealWithExcess(meal.getDateTime(), meal.getDescription(), meal.getCalories(), dateCal <= caloriesPerDay));
+            }
+        }
+        return filteredResults;
     }
+
+    private static Map<String, Integer> mapCaloriesPerDay(List<UserMeal> meals) {
+        Map<String, Integer> caloriesPerDay = new HashMap<>();
+        for (UserMeal item : meals) {
+            LocalDate date = item.getDateTime().toLocalDate();
+            String dateString = date.format(DateTimeFormatter.BASIC_ISO_DATE);
+            int calories = item.getCalories();
+            caloriesPerDay.put(dateString, caloriesPerDay.getOrDefault(dateString, 0) + calories);
+        }
+        return caloriesPerDay;
+    }
+
 
     public static List<UserMealWithExcess> filteredByStreams(List<UserMeal> meals, LocalTime startTime, LocalTime endTime, int caloriesPerDay) {
         // TODO Implement by streams
